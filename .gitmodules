@@ -1,0 +1,4 @@
+[submodule "extern/CommonLib"]
+	path = extern/CommonLib
+	url = https://github.com/alandtse/CommonLibVR
+	branch = ng

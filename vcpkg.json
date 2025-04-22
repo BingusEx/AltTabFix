@@ -1,0 +1,24 @@
+{
+  "name": "templateplugin",
+  "version-string": "1.0.0",
+  "description": "TemplatePlugin",
+  "features": {
+    "plugin": {
+      "description": "Build the SKSE plugin.",
+      "dependencies": [
+        "xbyak",
+        "catch2",
+        "fmt",
+        "directxtk",
+        "rapidcsv",
+        "spdlog",
+        "glm",
+        "toml11",
+        "nlohmann-json",
+        "gluino",
+        "clib-util"
+      ]
+    }
+  },
+  "default-features": ["plugin"]
+}

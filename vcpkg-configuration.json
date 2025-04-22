@@ -1,0 +1,20 @@
+{
+    "default-registry": {
+        "kind": "git",
+        "repository": "https://github.com/microsoft/vcpkg",
+        "baseline": "f6a5d4e8eb7476b8d7fc12a56dff300c1c986131"
+    },
+    "registries": [
+        {
+            "kind": "git",
+            "repository": "https://gitlab.com/colorglass/vcpkg-colorglass",
+            "baseline": "ef8d43afe4d26e842de3d034bff1081cb7990f07",
+            "packages": [
+                "bethesda-skyrim-scripts",
+                "gluino",
+                "script-extender-common",
+                "skse"
+            ]
+        }
+    ]
+}
