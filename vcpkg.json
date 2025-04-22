@@ -1,7 +1,7 @@
 {
-  "name": "templateplugin",
+  "name": "alttabfix",
   "version-string": "1.0.0",
-  "description": "TemplatePlugin",
+  "description": "Alt-Tab Fix",
   "features": {
     "plugin": {
       "description": "Build the SKSE plugin.",

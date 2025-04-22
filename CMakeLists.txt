@@ -4,7 +4,7 @@ set (CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE
       STRING "Choose the type of build.")
 	  
 project(
-	TemplatePlugin
+	AltTabFix
 	VERSION 1.0.0
 	DESCRIPTION "TemplatePlugin"
 	LANGUAGES CXX
