@@ -15,7 +15,6 @@
         "glm",
         "toml11",
         "nlohmann-json",
-        "gluino",
         "clib-util"
       ]
     }

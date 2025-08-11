@@ -1,11 +1,8 @@
 cmake_minimum_required(VERSION 3.22)
-
-set (CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE
-      STRING "Choose the type of build.")
-	  
+  
 project(
 	AltTabFix
-	VERSION 1.0.0
+	VERSION 1.1.0
 	DESCRIPTION "TemplatePlugin"
 	LANGUAGES CXX
 )
@@ -27,7 +24,6 @@ include(XSEPlugin)
 # # Find dependencies
 # #######################################################################################################################
 find_package(xbyak CONFIG REQUIRED)
-find_path(GLUINO_INCLUDE_DIRS "gluino/gluino.h")
 find_path(CLIB_UTIL_INCLUDE_DIRS "ClibUtil/utils.hpp")
 
 target_include_directories(
@@ -62,4 +58,15 @@ if(MSVC_VERSION GREATER_EQUAL 1936 AND MSVC_IDE) # 17.6+
 ]==] @ONLY)
 endif()
 
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+
+	COMMAND ${CMAKE_COMMAND} -E echo "Copying to: $ENV{GTSPLUGIN_COPY_DIR}"
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		"$<TARGET_FILE:${PROJECT_NAME}>"
+		"$ENV{GTSPLUGIN_COPY_DIR}/$<TARGET_FILE_NAME:${PROJECT_NAME}>"
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		"$<TARGET_PDB_FILE:${PROJECT_NAME}>"
+		"$ENV{GTSPLUGIN_COPY_DIR}/$<TARGET_PDB_FILE_NAME:${PROJECT_NAME}>"
+	COMMENT "Copying DLL and PDB to GTSPLUGIN_COPY_DIR"
+)
 
