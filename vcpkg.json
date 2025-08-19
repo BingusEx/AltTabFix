@@ -15,7 +15,8 @@
         "glm",
         "toml11",
         "nlohmann-json",
-        "clib-util"
+        "clib-util",
+        "detours"
       ]
     }
   },

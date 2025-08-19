@@ -1,4 +1,5 @@
 #pragma once
+#include "detours/detours.h"
 
 //Boilerplate
 #define FUNCTYPE_DETOUR static inline constinit decltype(thunk)*
@@ -172,7 +173,7 @@ namespace Hooks::stl {
 
 	//----- Write_detour
 
-	/*
+	
 	template <class T>
 	void write_detour(REL::RelocationID a_relId) {
 
@@ -205,6 +206,6 @@ namespace Hooks::stl {
 
 		logger::debug("Detour installed, Trampoline: 0x{:X}", addr, reinterpret_cast<std::uintptr_t>(T::func));
 	}
-	*/
+	
 
 }

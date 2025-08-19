@@ -25,7 +25,7 @@ SKSEPluginLoad(const LoadInterface * a_skse) {
 }
 
 SKSEPluginInfo(
-	.Version = REL::Version{ 1, 0, 1, 0 },
+	.Version = REL::Version{ 1, 0, 2, 0 },
 	.Name = "AltTabFix",
 	.Author = "BingusEx",
 	.StructCompatibility = SKSE::StructCompatibility::Independent,
