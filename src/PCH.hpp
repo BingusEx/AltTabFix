@@ -104,6 +104,9 @@
 #include <Windows.h>
 #include <Psapi.h>
 
+#include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+
 // Compatible declarations with other sample projects.
 #define DLLEXPORT __declspec(dllexport)
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "detours/detours.h"
+#include <detours/detours.h>
 
 //Boilerplate
 #define FUNCTYPE_DETOUR static inline constinit decltype(thunk)*
@@ -11,15 +11,15 @@ namespace Hooks::Internal {
 
 	template <typename T>
 	constexpr std::string_view get_type_name() {
-	#if defined(__clang__) or defined(__GNUC__)
-		std::string_view p = __PRETTY_FUNCTION__;
-		return p.substr(p.find('=') + 2, p.rfind(']') - p.find('=') - 2);
-	#elif defined(_MSC_VER)
-		std::string_view p = __FUNCSIG__;
-		const auto start = p.find("get_type_name<") + 14;
-		const auto end = p.find(">(void)");
-		return p.substr(start, end - start);
-	#endif
+		#if defined(__clang__) or defined(__GNUC__)
+			std::string_view p = __PRETTY_FUNCTION__;
+			return p.substr(p.find('=') + 2, p.rfind(']') - p.find('=') - 2);
+		#elif defined(_MSC_VER)
+			std::string_view p = __FUNCSIG__;
+			const auto start = p.find("get_type_name<") + 14;
+			const auto end = p.find(">(void)");
+			return p.substr(start, end - start);
+		#endif
 	}
 }
 
@@ -109,9 +109,9 @@ namespace Hooks::stl {
 
 	template <class F, size_t vtblIndex, class T>
 	void write_vfunc() {
-		logger::debug("Installing vfunc hook [{}] to {}::[{}]",
-			Internal::get_type_name<T>(),
-			Internal::get_type_name<F>(),
+		logger::debug("Installing vfunc hook [{}] to {}::[{}]", 
+			Internal::get_type_name<T>(), 
+			Internal::get_type_name<F>(), 
 			vtblIndex
 		);
 		REL::Relocation<std::uintptr_t> vtbl{ F::VTABLE[vtblIndex] };
@@ -121,8 +121,8 @@ namespace Hooks::stl {
 
 	template <class T>
 	void write_vfunc(REL::VariantID a_varID) {
-		logger::debug("Installing vfunc hook [{}] at VariantID [0x{:X} + 0x{:X}] Index: {}",
-			Internal::get_type_name<T>(),
+		logger::debug("Installing vfunc hook [{}] at VariantID [0x{:X} + 0x{:X}] Index: {}", 
+			Internal::get_type_name<T>(), 
 			a_varID.address(),
 			T::funcIndex * sizeof(void*),
 			T::funcIndex
@@ -173,7 +173,6 @@ namespace Hooks::stl {
 
 	//----- Write_detour
 
-	
 	template <class T>
 	void write_detour(REL::RelocationID a_relId) {
 
@@ -206,6 +205,5 @@ namespace Hooks::stl {
 
 		logger::debug("Detour installed, Trampoline: 0x{:X}", addr, reinterpret_cast<std::uintptr_t>(T::func));
 	}
-	
 
 }

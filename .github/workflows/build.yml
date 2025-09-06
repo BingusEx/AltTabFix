@@ -1,0 +1,98 @@
+name: Build Plugin
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'cmake/**'
+      - 'CMakeLists.txt'
+      - 'CMakePresets.json'
+      - 'vcpkg.json'
+      - '.github/workflows/build.yml'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'cmake/**'
+      - 'CMakeLists.txt'
+      - 'CMakePresets.json'
+      - 'vcpkg.json'
+      - '.github/workflows/build.yml'
+  workflow_dispatch: {}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: windows-2025
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup MSVC Environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: 'x64'
+
+      # Cache vcpkg dependencies
+      - name: Cache vcpkg
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/AppData/Local/vcpkg
+            vcpkg_installed
+          key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-${{ runner.os }}-
+
+      # Cache CMake build directory
+      - name: Cache CMake build
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: cmake-build-${{ runner.os }}-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'CMakePresets.json') }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            cmake-build-${{ runner.os }}-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'CMakePresets.json') }}-
+            cmake-build-${{ runner.os }}-
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11.5
+        with:
+          vcpkgJsonGlob: vcpkg.json
+        env:
+          VCPKG_BINARY_SOURCES: 'clear;files,~/AppData/Local/vcpkg,readwrite'
+
+      # First build attempt
+      - name: Build (First Attempt)
+        id: build_first
+        uses: lukka/run-cmake@v10
+        continue-on-error: true
+        with:
+          configurePreset: config-release
+          buildPreset: build-release
+
+      # Clean and retry if first attempt failed
+      - name: Clean and reconfigure on failure
+        if: steps.build_first.outcome == 'failure'
+        run: |
+          Write-Host "First build attempt failed. Cleaning and reconfiguring..."
+          if (Test-Path "build") {
+            Remove-Item -Recurse -Force "build"
+            Write-Host "Removed build directory"
+          }
+          cmake --preset config-release --fresh
+        shell: pwsh
+
+      # Second build attempt after clean
+      - name: Build (Retry After Clean)
+        if: steps.build_first.outcome == 'failure'
+        uses: lukka/run-cmake@v10
+        with:
+          configurePreset: config-release
+          buildPreset: build-release
+
+      - name: Upload Distribution Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: distribution-package
+          path: distribution/Package-*

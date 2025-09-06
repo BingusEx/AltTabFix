@@ -1,24 +1,22 @@
 {
-  "name": "alttabfix",
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "plugin",
   "version-string": "1.0.0",
-  "description": "Alt-Tab Fix",
+  "description": "",
   "features": {
     "plugin": {
-      "description": "Build the SKSE plugin.",
+      "description": "Build the plugin.",
       "dependencies": [
-        "xbyak",
-        "catch2",
-        "fmt",
-        "directxtk",
         "rapidcsv",
+        "directxtk",
         "spdlog",
-        "glm",
-        "toml11",
-        "nlohmann-json",
         "clib-util",
-        "detours"
+        "detours",
+        "xbyak",
+        "simpleini"
       ]
     }
   },
-  "default-features": ["plugin"]
+  "default-features": ["plugin"],
+  "overrides": []
 }

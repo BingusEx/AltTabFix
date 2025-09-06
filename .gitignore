@@ -531,4 +531,7 @@ FodyWeavers.xsd
 
 build/
 .clangd
-*.zip
+
+distribution/Package-*/*
+vcpkg
+

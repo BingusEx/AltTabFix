@@ -1,76 +1,120 @@
-cmake_minimum_required(VERSION 3.22)
-  
+cmake_minimum_required(VERSION 3.21)
+cmake_policy(VERSION 3.21...3.31)
+
+# #######################################################################################################################
+# # Project Defenition
+# #######################################################################################################################
+
 project(
 	AltTabFix
-	VERSION 1.2.1
-	DESCRIPTION "TemplatePlugin"
+	VERSION 1.3.0.0
+	DESCRIPTION "SKSE plugin that fixes stuck inputs after window loss & focus plus some other fixes"
 	LANGUAGES CXX
 )
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
+# Not Explosed By Cmake, Manually Set Here for use by version.rc.in
+set(PROJECT_COPYRIGHT "MIT")
+set(PROJECT_DESCRIPTION "${PROJECT_DESCRIPTION}")
+set(PROJECT_NAME "${PROJECT_NAME}")
+set(PROJECT_FRIENDLY_NAME "${PROJECT_NAME}")
+
+# Options
+option(PL_STRICT_COMPILE "Enable strict compilation flags (treat warnings as errors)" OFF)
+option(PL_DEPLOY_TO_FOLDER "Copy The Built DLL and PDB to the EnvVar Defined Target location" ON)
+option(PL_BUILD_DISTRIBUTION "Construct a distribution folder after each build" ON)
+
+# #######################################################################################################################
+# # Flags
+# #######################################################################################################################
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "Export compile_commands.json")
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
-add_compile_definitions(_DISABLE_EXTENDED_ALIGNED_STORAGE)
+add_compile_definitions(_ENABLE_EXTENDED_ALIGNED_STORAGE)
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+# Check if MSVC is the compiler
+if(MSVC)
+    # Extract the version number of the MSVC compiler
+    string(REGEX REPLACE "^([0-9]+)\\.([0-9]+).*" "\\1.\\2" MSVC_VERSION_STRING "${MSVC_VERSION}")
+    message(STATUS "Detected MSVC version: ${MSVC_VERSION_STRING}")
+
+    # Check if the MSVC version is at least 14.39
+    if(MSVC_VERSION LESS 1939)
+        message(FATAL_ERROR "MSVC version 14.39 or higher is required. Detected version: ${MSVC_VERSION_STRING}")
+    endif()
+else()
+    message(FATAL_ERROR "This project currently only supports MSVC as the compiler.")
+endif()
 
 # #######################################################################################################################
-# # Add CMake features
+# # Project modules
 # #######################################################################################################################
-include(XSEPlugin)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(xSEPlugin)
+
+# #######################################################################################################################
+# # Find dependencies - VCPKG Ports
+# #######################################################################################################################
+
+find_path(CLIB_UTIL_INCLUDE_DIRS "ClibUtil/Utils.hpp")
+
+# #######################################################################################################################
+# # Find dependencies - VCPKG Other
+# #######################################################################################################################
+
+find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
 find_path(DETOURS_INCLUDE_DIRS "detours/detours.h")
 find_library(DETOURS_LIBRARY detours REQUIRED)
 
 # #######################################################################################################################
-# # Find dependencies
+# # Find dependencies - Git
 # #######################################################################################################################
+
+
+# #######################################################################################################################
+# # Find dependencies - VCPKG
+# #######################################################################################################################
+
 find_package(xbyak CONFIG REQUIRED)
-find_path(CLIB_UTIL_INCLUDE_DIRS "ClibUtil/utils.hpp")
+
+
+# #######################################################################################################################
+# # Non-CLib Includes
+# #######################################################################################################################
 
 target_include_directories(
 	${PROJECT_NAME}
 	PRIVATE
+	${CLIBUTIL_INCLUDE_DIRS}
 	${DETOURS_INCLUDE_DIRS}
-	${CLIB_UTIL_INCLUDE_DIRS}
+	${SIMPLEINI_INCLUDE_DIRS}
 )
 
 target_link_libraries(
 	${PROJECT_NAME}
 	PRIVATE
+    ${DETOURS_LIBRARY}
 	xbyak::xbyak
-	${DETOURS_LIBRARY}
 )
 
-# https://gitlab.kitware.com/cmake/cmake/-/issues/24922#note_1371990
-if(MSVC_VERSION GREATER_EQUAL 1936 AND MSVC_IDE) # 17.6+
-	# When using /std:c++latest, "Build ISO C++23 Standard Library Modules" defaults to "Yes".
-	# Default to "No" instead.
-	#
-	# As of CMake 3.26.4, there isn't a way to control this property
-	# (https://gitlab.kitware.com/cmake/cmake/-/issues/24922),
-	# We'll use the MSBuild project system instead
-	# (https://learn.microsoft.com/en-us/cpp/build/reference/vcxproj-file-structure)
-	file(CONFIGURE OUTPUT "${CMAKE_BINARY_DIR}/Directory.Build.props" CONTENT [==[
-<Project>
-  <ItemDefinitionGroup>
-    <ClCompile>
-      <BuildStlModules>false</BuildStlModules>
-    </ClCompile>
-  </ItemDefinitionGroup>
-</Project>
-]==] @ONLY)
-endif()
+# #######################################################################################################################
+# # Packagging
+# #######################################################################################################################
+include(Package)
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+# ----- debug
+message(STATUS "CMAKE_CXX_FLAGS:                        ${CMAKE_CXX_FLAGS}")
+message(STATUS "CMAKE_CXX_FLAGS_DEBUG:                  ${CMAKE_CXX_FLAGS_DEBUG}")
+message(STATUS "CMAKE_CXX_FLAGS_RELEASE:                ${CMAKE_CXX_FLAGS_RELEASE}")
+message(STATUS "CMAKE_CXX_FLAGS_RELWITHDEBINFO:         ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+message(STATUS "CMAKE_EXE_LINKER_FLAGS:                 ${CMAKE_EXE_LINKER_FLAGS}")
+message(STATUS "CMAKE_EXE_LINKER_FLAGS_DEBUG:           ${CMAKE_EXE_LINKER_FLAGS_DEBUG}")
+message(STATUS "CMAKE_EXE_LINKER_FLAGS_RELEASE:         ${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
+message(STATUS "CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO:  ${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO}")
 
-	COMMAND ${CMAKE_COMMAND} -E echo "Copying to: $ENV{GTSPLUGIN_COPY_DIR}"
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different
-		"$<TARGET_FILE:${PROJECT_NAME}>"
-		"$ENV{GTSPLUGIN_COPY_DIR}/$<TARGET_FILE_NAME:${PROJECT_NAME}>"
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different
-		"$<TARGET_PDB_FILE:${PROJECT_NAME}>"
-		"$ENV{GTSPLUGIN_COPY_DIR}/$<TARGET_PDB_FILE_NAME:${PROJECT_NAME}>"
-	COMMENT "Copying DLL and PDB to GTSPLUGIN_COPY_DIR"
-)
+get_target_property(compile_flags ${PROJECT_NAME} COMPILE_OPTIONS)
+message(STATUS "COMPILE_OPTIONS:      ${compile_flags}")
+
+get_target_property(link_flags ${PROJECT_NAME} LINK_OPTIONS)
+message(STATUS "LINK_OPTIONS:         ${link_flags}")
 

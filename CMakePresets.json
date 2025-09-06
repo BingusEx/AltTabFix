@@ -2,7 +2,7 @@
   "version": 3,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 22,
+    "minor": 21,
     "patch": 0
   },
   "configurePresets": [
@@ -10,9 +10,10 @@
       "name": "common",
       "hidden": true,
       "cacheVariables": {
-        "SKSE_SUPPORT_XBYAK": "ON"
-      },
-      "binaryDir": "${sourceDir}/build"
+        "SKSE_SUPPORT_XBYAK": "ON",
+        "CMAKE_SUPPRESS_DEVELOPER_WARNINGS": "ON",
+        "CMAKE_WARN_DEPRECATED": "OFF"
+      }
     },
     {
       "name": "platform-win32",
@@ -76,54 +77,162 @@
       }
     },
     {
-      "name": "AE_SE_Debug",
-      "cacheVariables": {
-        "BUILD_SKYRIM": true,
-        "ENABLE_SKYRIM_AE": "ON",
-        "ENABLE_SKYRIM_SE": "ON",
-        "ENABLE_SKYRIM_VR": "OFF",
-        "BUILD_TESTS": "OFF",
-		"CMAKE_BUILD_TYPE": "Debug"
-      },
+      "name": "base-config",
+      "hidden": true,
       "inherits": [
         "common",
         "vcpkg",
         "platform-win32-unicode",
         "generator-ninja",
         "msvc"
-      ]
+      ],
+      "cacheVariables": {
+        "ENABLE_SKYRIM_AE": "ON",
+        "ENABLE_SKYRIM_SE": "ON",
+        "ENABLE_SKYRIM_VR": "OFF",
+        "BUILD_TESTS": "OFF"
+      }
     },
     {
-      "name": "AE_SE_Release",
+      "name": "config-fakedebug",
+      "displayName": "Debug (Fake)",
+      "description": "Fake debug build using RelWithDebInfo and debug flags to bypass the broken true debug builds.",
+      "inherits": "base-config",
+      "binaryDir": "${sourceDir}/build/Debug",
       "cacheVariables": {
-        "BUILD_SKYRIM": true,
-        "ENABLE_SKYRIM_AE": "ON",
-        "ENABLE_SKYRIM_SE": "ON",
-        "ENABLE_SKYRIM_VR": "OFF",
-        "BUILD_TESTS": "OFF",
-        "CMAKE_BUILD_TYPE": "Release"
-      },
-      "inherits": [
-        "common",
-        "vcpkg",
-        "platform-win32-unicode",
-        "generator-ninja",
-        "msvc"
-      ]
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_C_FLAGS": "/EHsc /Zi /FS /D_CRTDBG_MAP_ALLOC /DDEBUG_HEAP",
+        "CMAKE_CXX_FLAGS": "/EHsc /Zi /FS /D_CRTDBG_MAP_ALLOC /DDEBUG_HEAP",
+        "CMAKE_C_FLAGS_RELWITHDEBINFO": "/Od /Ob0 /Zi /RTC1",
+        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "/Od /Ob0 /Zi /RTC1",
+        "CMAKE_EXE_LINKER_FLAGS": "/DEBUG /DEBUG:FULL /OPT:NOREF /OPT:NOICF /INCREMENTAL:NO",
+        "CMAKE_SHARED_LINKER_FLAGS": "/DEBUG /DEBUG:FULL /OPT:NOREF /OPT:NOICF /INCREMENTAL:NO",
+        "CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO": "/DEBUG /DEBUG:FULL /OPT:NOREF /OPT:NOICF /INCREMENTAL:NO",
+        "CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO": "/DEBUG /DEBUG:FULL /OPT:NOREF /OPT:NOICF /INCREMENTAL:NO",
+        "CMAKE_C_FLAGS_INIT": "/fsanitize=address",
+        "CMAKE_CXX_FLAGS_INIT": "/fsanitize=address"
+      }
+    },
+    {
+      "name": "config-release",
+      "displayName": "Release (Default)",
+      "description": "Configure release build with SSE4.2.",
+      "inherits": "base-config",
+      "binaryDir": "${sourceDir}/build/Release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_FLAGS": "/arch:SSE4.2 /EHsc /Zi /FS /fp:fast /GL /Gw /O2 /Ob3 /Oi /Ot /Oy /fp:except- /Gy /Gm- /sdl- /GS- /guard:cf-",
+        "CMAKE_CXX_FLAGS": "/arch:SSE4.2 /EHsc /Zi /FS /fp:fast /GL /Gw /O2 /Ob3 /Oi /Ot /Oy /fp:except- /Gy /Gm- /sdl- /GS- /guard:cf-",
+        "CMAKE_C_FLAGS_RELEASE": "/arch:SSE4.2 /O2 /Ob3 /DNDEBUG /GL /Gw /Gy /Oi /Ot /Oy /fp:fast /fp:except- /GS- /guard:cf-",
+        "CMAKE_CXX_FLAGS_RELEASE": "/arch:SSE4.2 /O2 /Ob3 /DNDEBUG /GL /Gw /Gy /Oi /Ot /Oy /fp:fast /fp:except- /GS- /guard:cf-",
+        "CMAKE_EXE_LINKER_FLAGS": "/DEBUG:FULL /OPT:REF /OPT:NOICF /LTCG /INCREMENTAL:NO",
+        "CMAKE_SHARED_LINKER_FLAGS": "/DEBUG:FULL /OPT:REF /OPT:NOICF /LTCG /INCREMENTAL:NO",
+        "CMAKE_EXE_LINKER_FLAGS_RELEASE": "/DEBUG:FULL /OPT:REF /OPT:NOICF /LTCG /INCREMENTAL:NO",
+        "CMAKE_SHARED_LINKER_FLAGS_RELEASE": "/DEBUG:FULL /OPT:REF /OPT:NOICF /LTCG /INCREMENTAL:NO"
+      }
+    },
+    {
+      "name": "config-relwithdebinfo",
+      "displayName": "RelWithDebInfo (Default)",
+      "description": "Configure release build with SSE4.2 and more debugging information than standard release builds.",
+      "inherits": "base-config",
+      "binaryDir": "${sourceDir}/build/RelWithDebInfo",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_C_FLAGS": "/arch:SSE4.2 /EHsc /Zi /FS /fp:fast /GL /Gw /O2 /Ob3 /Oi /Ot /Oy /fp:except- /Gy /Gm- /sdl- /GS- /guard:cf-",
+        "CMAKE_CXX_FLAGS": "/arch:SSE4.2 /EHsc /Zi /FS /fp:fast /GL /Gw /O2 /Ob3 /Oi /Ot /Oy /fp:except- /Gy /Gm- /sdl- /GS- /guard:cf-",
+        "CMAKE_C_FLAGS_RELWITHDEBINFO": "/arch:SSE4.2 /O2 /Ob3 /GL /Gw /Gy /Oi /Ot /Oy /fp:fast /fp:except- /GS- /guard:cf-",
+        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "/arch:SSE4.2 /O2 /Ob3 /GL /Gw /Gy /Oi /Ot /Oy /fp:fast /fp:except- /GS- /guard:cf-",
+        "CMAKE_EXE_LINKER_FLAGS": "/DEBUG:FULL /OPT:REF /OPT:NOICF /LTCG /INCREMENTAL:NO",
+        "CMAKE_SHARED_LINKER_FLAGS": "/DEBUG:FULL /OPT:REF /OPT:NOICF /LTCG /INCREMENTAL:NO",
+        "CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO": "/DEBUG:FULL /OPT:REF /OPT:NOICF /LTCG /INCREMENTAL:NO",
+        "CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO": "/DEBUG:FULL /OPT:REF /OPT:NOICF /LTCG /INCREMENTAL:NO"
+      }
+    },
+    {
+      "name": "config-relwithdebinfo-avx",
+      "displayName": "RelWithDebInfo (Default)",
+      "description": "Configure release build with AVX and more debugging information than standard release builds.",
+      "inherits": "base-config",
+      "binaryDir": "${sourceDir}/build/RelWithDebInfo-AVX",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_C_FLAGS": "/arch:AVX /EHsc /Zi /FS /fp:fast /GL /Gw /O2 /Ob3 /Oi /Ot /Oy /fp:except- /Gy /Gm- /sdl- /GS- /guard:cf-",
+        "CMAKE_CXX_FLAGS": "/arch:AVX /EHsc /Zi /FS /fp:fast /GL /Gw /O2 /Ob3 /Oi /Ot /Oy /fp:except- /Gy /Gm- /sdl- /GS- /guard:cf-",
+        "CMAKE_C_FLAGS_RELWITHDEBINFO": "/arch:AVX /O2 /Ob3 /GL /Gw /Gy /Oi /Ot /Oy /fp:fast /fp:except- /GS- /guard:cf-",
+        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "/arch:AVX /O2 /Ob3 /GL /Gw /Gy /Oi /Ot /Oy /fp:fast /fp:except- /GS- /guard:cf-",
+        "CMAKE_EXE_LINKER_FLAGS": "/DEBUG:FULL /OPT:REF /OPT:NOICF /LTCG /INCREMENTAL:NO",
+        "CMAKE_SHARED_LINKER_FLAGS": "/DEBUG:FULL /OPT:REF /OPT:NOICF /LTCG /INCREMENTAL:NO",
+        "CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO": "/DEBUG:FULL /OPT:REF /OPT:NOICF /LTCG /INCREMENTAL:NO",
+        "CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO": "/DEBUG:FULL /OPT:REF /OPT:NOICF /LTCG /INCREMENTAL:NO"
+      }
+    },
+    {
+      "name": "config-release-avx",
+      "displayName": "Release (AVX)",
+      "description": "Configure release build with AVX.",
+      "inherits": "base-config",
+      "binaryDir": "${sourceDir}/build/Release-AVX",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_FLAGS": "/arch:AVX /EHsc /Zi /FS /fp:fast /GL /Gw /O2 /Ob3 /Oi /Ot /Oy /fp:except- /Gy /Gm- /sdl- /GS- /guard:cf-",
+        "CMAKE_CXX_FLAGS": "/arch:AVX /EHsc /Zi /FS /fp:fast /GL /Gw /O2 /Ob3 /Oi /Ot /Oy /fp:except- /Gy /Gm- /sdl- /GS- /guard:cf-",
+        "CMAKE_C_FLAGS_RELEASE": "/arch:AVX /O2 /Ob3 /DNDEBUG /GL /Gw /Gy /Oi /Ot /Oy /fp:fast /fp:except- /GS- /guard:cf-",
+        "CMAKE_CXX_FLAGS_RELEASE": "/arch:AVX /O2 /Ob3 /DNDEBUG /GL /Gw /Gy /Oi /Ot /Oy /fp:fast /fp:except- /GS- /guard:cf-",
+        "CMAKE_EXE_LINKER_FLAGS": "/DEBUG:FULL /OPT:REF /OPT:NOICF /LTCG /INCREMENTAL:NO",
+        "CMAKE_SHARED_LINKER_FLAGS": "/DEBUG:FULL /OPT:REF /OPT:NOICF /LTCG /INCREMENTAL:NO",
+        "CMAKE_EXE_LINKER_FLAGS_RELEASE": "/DEBUG:FULL /OPT:REF /OPT:NOICF /LTCG /INCREMENTAL:NO",
+        "CMAKE_SHARED_LINKER_FLAGS_RELEASE": "/DEBUG:FULL /OPT:REF /OPT:NOICF /LTCG /INCREMENTAL:NO"
+      }
+    },
+    {
+      "name": "config-strict",
+      "displayName": "Strict",
+      "description": "Configure strict build with warnings as errors.",
+      "inherits": "base-config",
+      "binaryDir": "${sourceDir}/build/Strict",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "GTS_STRICT_COMPILE": "ON"
+      }
     }
   ],
   "buildPresets": [
-        {
-            "name": "Release-MSVC",
-            "displayName": "Release (MSVC)",
-            "configurePreset": "AE_SE_Release",
-            "description": "Optimized release build."
-        },
-        {
-            "name": "Debug-MSVC",
-            "displayName": "Debug (MSVC)",
-            "configurePreset": "AE_SE_Debug",
-            "description": "Debug build for testing."
-        }
-	]
+    {
+      "name": "build-fakedebug",
+      "displayName": "Build AE/SE (Fake Debug)",
+      "configurePreset": "config-fakedebug",
+      "description": "Compile a fake debug build."
+    },
+    {
+      "name": "build-release",
+      "displayName": "Build AE/SE (Release)",
+      "configurePreset": "config-release",
+      "description": "Compile an optimized release build (SSE4.2)."
+    },
+    {
+      "name": "build-release-avx",
+      "displayName": "Build AE/SE (Release AVX)",
+      "configurePreset": "config-release-avx",
+      "description": "Compile an optimized release build (AVX)."
+    },
+    {
+      "name": "build-relwithdebinfo",
+      "displayName": "Build AE/SE (RelWithDebInfo)",
+      "configurePreset": "config-relwithdebinfo",
+      "description": "Compile an optimized release build (SSE4.2)."
+    },
+    {
+      "name": "build-relwithdebinfo-avx",
+      "displayName": "Build AE/SE (RelWithDebInfo AVX)",
+      "configurePreset": "config-relwithdebinfo-avx",
+      "description": "Compile an optimized release build (AVX)."
+    },
+    {
+      "name": "build-strict",
+      "displayName": "Build AE/SE (Strict)",
+      "configurePreset": "config-strict",
+      "description": "Compile a strict release build with warnings as errors."
+    }
+  ]
 }

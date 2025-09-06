@@ -1,19 +1,22 @@
-#include "Hook.hpp"
-#include "Fixes.hpp"
+#include "Config/Config.hpp"
+#include "Hooks/Hooks.hpp"
+#include "Version.hpp"
 
-extern "C" void DLLEXPORT APIENTRY Initialize() {
-	//std::cout << "AltTabFix PreHook Installed\n";
-}
+#include "Util/Logger/Logger.hpp"
 
 SKSEPluginLoad(const LoadInterface * a_skse) {
 
 	Init(a_skse);
-	Hook::Install();
+	logger::Initialize();
+	Config::ConfigManager::Initialize();
+	Hooks::Install();
 
 	if (!GetMessagingInterface()->RegisterListener([](MessagingInterface::Message* message) {
 		switch (message->type) {
 			case MessagingInterface::kPostLoadGame: {
-				AltTabFix::ResetInput();
+				if (Config::ConfigManager::AltTabFix.bEnable) {
+					Hooks::AltTabFix::ResetInput();
+				}
 			}
 			default: {}
 		}
@@ -25,8 +28,8 @@ SKSEPluginLoad(const LoadInterface * a_skse) {
 }
 
 SKSEPluginInfo(
-	.Version = REL::Version{ 1, 0, 2, 0 },
-	.Name = "AltTabFix",
+	.Version = Plugin::ModVersion,
+	.Name = Plugin::ModName,
 	.Author = "BingusEx",
 	.StructCompatibility = SKSE::StructCompatibility::Independent,
 	.RuntimeCompatibility = SKSE::VersionIndependence::AddressLibrary
