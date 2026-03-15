@@ -5,7 +5,12 @@ namespace Hooks::AltTabFix {
 
 	constexpr RE::InputEvent* const dummy[] = { nullptr };
 	static volatile inline int8_t BlockFrameCount = 0;
+	static inline HWND windowHandle = nullptr;
 
+	//Main::Update has an async key check that immediatly exits out of the function
+	//This was probably bethesda's attempt at preventing any stray input parsing.
+	//I disabled it with the assumption that it will interfere with the "postfix" cleanup i do
+	//idk if it actually makes a difference though.
 	inline void RemoveAsyncKeyCheck() {
 
 		logger::trace("Removing Main::Update Key check");
@@ -20,9 +25,12 @@ namespace Hooks::AltTabFix {
 		if (const auto& InputManger = RE::BSInputDeviceManager::GetSingleton()) {
 
 			if (const auto& Device = InputManger->GetKeyboard()) {
-				Device->Reset();
-				Device->Process(0);
+				Device->ClearInputState(); //memset(0) the input buffer
+				Device->Poll(0);
 
+				//This messes with the alt tab menu in windows, besides its not windows that has stuck keys
+				//so this is useless here.
+				/*
 				//Also Explicitly send  KeyUp Events
 				INPUT input{};
 				input.type = INPUT_KEYBOARD;
@@ -38,15 +46,11 @@ namespace Hooks::AltTabFix {
 				for (int vk : vks) {
 					input.ki.wVk = vk;
 					SendInput(1, &input, sizeof(input));
-				}
+				}*/
 
-				// Flush message queue of Alt keys
+				// Flush window message queue of all keys
 				MSG msg;
-				while (PeekMessage(&msg, nullptr, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE)) {
-					if (msg.message == WM_KEYDOWN || msg.message == WM_KEYUP) {
-						// discard all wmessage keys
-					}
-				}
+				while (PeekMessage(&msg, nullptr, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE));
 			}
 		}
 
@@ -106,6 +110,7 @@ namespace Hooks::AltTabFix {
 
 			}
 
+			windowHandle = a_hwnd;
 			return func(a_hwnd, a_msg, a_wParam, a_lParam);
 		}
 

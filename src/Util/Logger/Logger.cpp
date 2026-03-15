@@ -1,8 +1,5 @@
 #include "Logger.hpp"
 
-#include "Util/Text/Text.hpp"
-#include "Util/Windows/MessageBox.hpp"
-
 namespace {
 
 	//ANSI Escape Codes: Colors
@@ -23,6 +20,13 @@ namespace {
 	constexpr const char* PatternDefault = "[%Y-%m-%d %H:%M:%S.%e] [%l] [%s:%#] %v";
 	constexpr const char* PatternConsole = WHT "[" RED "ATF" WHT "][%H:%M:%S.%e][%^%l%$][" YEL "%s:%#" WHT "]: %v" RST;
 
+	std::string ToLower(std::string a_str) {
+		std::ranges::transform(a_str, a_str.begin(), [](unsigned char c) {
+			return std::tolower(c);
+		});
+		return a_str;
+	}
+
 }
 
 namespace SKSE::log {
@@ -32,7 +36,7 @@ namespace SKSE::log {
 		auto path = log_directory();
 
 		if (!path) {
-			Util::Win32::ReportAndExit("Could not find a valid log directory. The game will now close");
+			stl::report_and_fail("Could not find a valid log directory");
 		}
 
 		*path /= PluginDeclaration::GetSingleton()->GetName();
@@ -68,7 +72,7 @@ namespace SKSE::log {
 		const auto to_level_enum = [](const char* levelStr) -> std::optional<spdlog::level::level_enum> {
 			using enum spdlog::level::level_enum;
 
-			std::string lower = Util::Text::ToLower(levelStr);
+			std::string lower = ToLower(levelStr);
 			if (lower == "off")                         return off;
 			if (lower == "trace")                       return trace;
 			if (lower == "debug")                       return debug;

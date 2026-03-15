@@ -5,7 +5,7 @@ include(FetchContent)
 FetchContent_Declare(
 	CommonLibSSE                   
     GIT_REPOSITORY https://github.com/alandtse/CommonLibVR/
-    GIT_TAG 659e9eadb729b5b478d01620e333cfb798dd951b
+    GIT_TAG 23bf5512657c16ca3b4e1c9379f47038da26053d
     GIT_SHALLOW ON
 )
 
