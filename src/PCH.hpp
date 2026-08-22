@@ -97,8 +97,8 @@
 #include <version>
 
 #include <RE/Skyrim.h>
-#include <SKSE/SKSE.h>
 #include <REL/Relocation.h>
+#include <SKSE/SKSE.h>
 
 #include <ShlObj_core.h>
 #include <Windows.h>
@@ -106,9 +106,6 @@
 
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
-
-// Compatible declarations with other sample projects.
-#define DLLEXPORT __declspec(dllexport)
 
 using namespace std::literals;
 using namespace REL::literals;

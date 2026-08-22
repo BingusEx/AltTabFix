@@ -7,13 +7,13 @@ cmake_policy(VERSION 3.21...3.31)
 
 project(
 	AltTabFix
-	VERSION 1.3.1.0
+	VERSION 1.3.2.0
 	DESCRIPTION "SKSE plugin that fixes stuck inputs after window loss & focus plus some other fixes"
 	LANGUAGES CXX
 )
 
 # Not Explosed By Cmake, Manually Set Here for use by version.rc.in
-set(PROJECT_COPYRIGHT "MIT")
+set(PROJECT_COPYRIGHT "GPL-3.0")
 set(PROJECT_DESCRIPTION "${PROJECT_DESCRIPTION}")
 set(PROJECT_NAME "${PROJECT_NAME}")
 set(PROJECT_FRIENDLY_NAME "${PROJECT_NAME}")

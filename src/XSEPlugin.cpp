@@ -8,6 +8,7 @@ SKSEPluginLoad(const LoadInterface * a_skse) {
 
 	Init(a_skse);
 	logger::Initialize();
+	logger::SetLevel(spdlog::level::trace);
 	Config::ConfigManager::Initialize();
 	Hooks::Install();
 

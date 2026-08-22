@@ -149,14 +149,18 @@ namespace Hooks::AltTabFix {
 	inline void Install() {
 
 		logger::info("Installing AltTabFix Hooks");
+		const bool Pre17 = Module::get().version() <= RUNTIME_1_6_1179;
+		logger::info("Module Version: {}", Module::get().version().string());
 
 		//ALT Tab Fix
 		Hooks::stl::write_call<Win32_RegisterClassA, 6>(REL::RelocationID(75591, 77226, NULL), REL::VariantOffset(0x8E, 0x15C, NULL));
-		Hooks::stl::write_call<Main_Update_Post, 5>(REL::RelocationID(35565, 36564, NULL), REL::VariantOffset(0x748, 0xC26, NULL));
 		Hooks::stl::write_call<Input_DispatchEvent, 5>(REL::RelocationID(67315, 68617, NULL), REL::VariantOffset(0x7B, 0x7B, NULL));
+		Hooks::stl::write_call<Main_Update_Post, 5>(REL::RelocationID(35565, 36564, NULL), REL::VariantOffset(0x748, Pre17 ? 0xC26 : 0xC38, NULL));
 
-		RemoveAsyncKeyCheck();
-
+		//Can't be bothered to check if this works on 1.7
+		if (Pre17) {
+			logger::info("Module is Pre 1.7 Applying AsyncKeyCheck Removal");
+			RemoveAsyncKeyCheck();
+		}
 	}
-
 }
