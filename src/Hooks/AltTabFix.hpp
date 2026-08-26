@@ -11,9 +11,12 @@ namespace Hooks::AltTabFix {
 	//This was probably bethesda's attempt at preventing any stray input parsing.
 	//I disabled it with the assumption that it will interfere with the "postfix" cleanup i do
 	//idk if it actually makes a difference though.
+	//This is actually important As the early return messes with the input prevention.
+	//Does this mean input is checked/dispatched on a different thread?
 	inline void RemoveAsyncKeyCheck() {
 
 		logger::trace("Removing Main::Update Key check");
+		//1.7.99 = 0x140658610 - 0x140658671 = 0x61, Unchanged luckily
 		REL::Relocation<std::uintptr_t> jmp{ VariantID(35565, 36564, NULL), VariantOffset(0x46, 0x61, NULL) };
 
 		// disable jmp.
@@ -157,10 +160,7 @@ namespace Hooks::AltTabFix {
 		Hooks::stl::write_call<Input_DispatchEvent, 5>(REL::RelocationID(67315, 68617, NULL), REL::VariantOffset(0x7B, 0x7B, NULL));
 		Hooks::stl::write_call<Main_Update_Post, 5>(REL::RelocationID(35565, 36564, NULL), REL::VariantOffset(0x748, Pre17 ? 0xC26 : 0xC38, NULL));
 
-		//Can't be bothered to check if this works on 1.7
-		if (Pre17) {
-			logger::info("Module is Pre 1.7 Applying AsyncKeyCheck Removal");
-			RemoveAsyncKeyCheck();
-		}
+		RemoveAsyncKeyCheck();
+		
 	}
 }

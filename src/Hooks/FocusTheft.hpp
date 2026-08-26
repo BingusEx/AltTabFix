@@ -3,34 +3,6 @@
 
 namespace Hooks::FocusTheft {
 
-	inline HWND GameWindow = nullptr;
-
-	struct WndProcHandler {
-
-		static LRESULT thunk(HWND a_hwnd, UINT a_msg, WPARAM a_wParam, LPARAM a_lParam) {
-
-			//Just incase the hwnd changes during runtime somehow.
-			GameWindow = a_hwnd;
-			return func(a_hwnd, a_msg, a_wParam, a_lParam);
-
-		}
-
-		FUNCTYPE_CALL func;
-	};
-
-	struct Win32_RegisterClassA {
-
-		static WORD thunk(WNDCLASSA* a_wndClass) {
-
-			WndProcHandler::func = reinterpret_cast<uintptr_t>(a_wndClass->lpfnWndProc);
-			a_wndClass->lpfnWndProc = &WndProcHandler::thunk;
-
-			return func(a_wndClass);
-		}
-
-		FUNCTYPE_CALL func;
-	};
-
 	struct Win32_SetForeGroundWindow {
 
 		static bool __stdcall thunk(HWND a_hwnd) {
@@ -66,33 +38,43 @@ namespace Hooks::FocusTheft {
 	struct BSDInput_GetDeviceState {
 
 		static void __thiscall thunk(RE::BSDirectInputManager* a_mgr, REX::W32::IDirectInputDevice8A* a_device, std::uint32_t a_size, void* a_outData) {
-
-			//Zero out data if not focused.
-			if (GetForegroundWindow() != GameWindow) {
-				ZeroMemory(a_outData, a_size);
-				return;
+			
+			if (BSGraphics::Renderer* renderer = RE::BSGraphics::Renderer::GetSingleton()) {
+				if (BSGraphics::RendererWindow* curWindow = renderer->GetCurrentRenderWindow()) {
+					if (REX::W32::HWND RexHwnd = curWindow->hWnd) {
+						if (HWND hwnd = reinterpret_cast<HWND>(RexHwnd)) {
+							if (GetForegroundWindow() != hwnd) {
+								ZeroMemory(a_outData, a_size);
+								return;
+							}
+						}
+					}
+				}
 			}
-
 			func(a_mgr, a_device, a_size, a_outData);
-
 		}
-
 		FUNCTYPE_DETOUR func;
-
 	};
 
 	struct BSDinput_GetDeviceData {
 
 		static void __thiscall thunk(RE::BSDirectInputManager* a_mgr, REX::W32::IDirectInputDevice8A* a_device, std::uint32_t* a_dataSize, REX::W32::DIDEVICEOBJECTDATA** a_outData) {
 
-			//Zero out devdata if not focused.
-			if (GetForegroundWindow() != GameWindow) {
-				if (a_dataSize) *a_dataSize = 0;
-				return;
+
+			if (BSGraphics::Renderer* renderer = RE::BSGraphics::Renderer::GetSingleton()) {
+				if (BSGraphics::RendererWindow* curWindow = renderer->GetCurrentRenderWindow()) {
+					if (REX::W32::HWND RexHwnd = curWindow->hWnd) {
+						if (HWND hwnd = reinterpret_cast<HWND>(RexHwnd)) {
+							//Zero out devdata if not focused.
+							if (GetForegroundWindow() != hwnd) {
+								if (a_dataSize) *a_dataSize = 0;
+								return;
+							}
+						}
+					}
+				}
 			}
-
 			func(a_mgr, a_device, a_dataSize, a_outData);
-
 		}
 
 		FUNCTYPE_DETOUR func;
@@ -104,7 +86,6 @@ namespace Hooks::FocusTheft {
 		logger::info("Installing Anti-Focus Steal Hooks");
 
 		//Steal Focus on window create fix
-		Hooks::stl::write_call<Win32_RegisterClassA, 6>(REL::RelocationID(75591, 77226, NULL), REL::VariantOffset(0x8E, 0x15C, NULL));
 		Hooks::stl::write_call<Win32_SetForeGroundWindow, 6>(REL::RelocationID(75591, 77226, NULL), REL::VariantOffset(0x195, 0x25e, NULL));
 		Hooks::stl::write_call<Win32_ShowWindow, 6>(REL::RelocationID(75591, 77226, NULL), REL::VariantOffset(0x184, 0x24d, NULL));
 		Hooks::stl::write_call<Win32_SetFocus, 6>(REL::RelocationID(75591, 77226, NULL), REL::VariantOffset(0x1a6, 0x26f, NULL));

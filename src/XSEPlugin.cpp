@@ -6,6 +6,9 @@
 
 SKSEPluginLoad(const LoadInterface * a_skse) {
 
+	//You never know...
+	REL::Module::reset();
+
 	Init(a_skse);
 	logger::Initialize();
 	logger::SetLevel(spdlog::level::trace);
@@ -33,7 +36,7 @@ SKSEPluginInfo(
 	.Name = Plugin::ModName,
 	.Author = "BingusEx",
 	.StructCompatibility = SKSE::StructCompatibility::Independent,
-	.RuntimeCompatibility = SKSE::VersionIndependence::AddressLibrary
+	.RuntimeCompatibility = SKSE::VersionIndependence::AddressLibrary,
 );
 
 
