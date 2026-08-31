@@ -7,13 +7,13 @@
     "plugin": {
       "description": "Build the plugin.",
       "dependencies": [
+        "simpleini",
         "rapidcsv",
         "directxtk",
         "spdlog",
         "clib-util",
         "detours",
-        "xbyak",
-        "simpleini"
+        "xbyak"
       ]
     }
   },

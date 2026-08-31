@@ -5,7 +5,7 @@ include(FetchContent)
 FetchContent_Declare(
 	CommonLibSSE                   
     GIT_REPOSITORY https://github.com/alandtse/CommonLibSSE-NG/
-    GIT_TAG 3d81614617910e7f34b33d8750881811b5e36445
+    GIT_TAG 8b032fa992750d654d6d38a33731714d8b86be1f
     GIT_SHALLOW ON
 )
 

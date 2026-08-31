@@ -62,7 +62,6 @@ find_path(CLIB_UTIL_INCLUDE_DIRS "ClibUtil/Utils.hpp")
 # # Find dependencies - VCPKG Other
 # #######################################################################################################################
 
-find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
 find_path(DETOURS_INCLUDE_DIRS "detours/detours.h")
 find_library(DETOURS_LIBRARY detours REQUIRED)
 
@@ -76,7 +75,7 @@ find_library(DETOURS_LIBRARY detours REQUIRED)
 # #######################################################################################################################
 
 find_package(xbyak CONFIG REQUIRED)
-
+find_package(SimpleIni CONFIG REQUIRED)
 
 # #######################################################################################################################
 # # Non-CLib Includes
@@ -87,7 +86,6 @@ target_include_directories(
 	PRIVATE
 	${CLIBUTIL_INCLUDE_DIRS}
 	${DETOURS_INCLUDE_DIRS}
-	${SIMPLEINI_INCLUDE_DIRS}
 )
 
 target_link_libraries(
@@ -95,7 +93,10 @@ target_link_libraries(
 	PRIVATE
     ${DETOURS_LIBRARY}
 	xbyak::xbyak
+	SimpleIni::SimpleIni
 )
+
+
 
 # #######################################################################################################################
 # # Packagging
