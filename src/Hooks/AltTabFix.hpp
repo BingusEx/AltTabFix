@@ -28,6 +28,10 @@ namespace Hooks::AltTabFix {
 		if (const auto& InputManger = RE::BSInputDeviceManager::GetSingleton()) {
 
 			if (const auto& Device = InputManger->GetKeyboard()) {
+
+				//TODO: Check if we can clear out the DINPUT8 device data.
+				//The game does not use wndproc for input.
+
 				Device->ClearInputState(); //memset(0) the input buffer
 				Device->Poll(0);
 

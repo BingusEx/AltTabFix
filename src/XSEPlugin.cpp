@@ -34,7 +34,7 @@ SKSEPluginLoad(const LoadInterface * a_skse) {
 SKSEPluginInfo(
 	.Version = Plugin::ModVersion,
 	.Name = Plugin::ModName,
-	.Author = "BingusEx",
+	.Author = "Arial6502",
 	.StructCompatibility = SKSE::StructCompatibility::Independent,
 	.RuntimeCompatibility = SKSE::VersionIndependence::AddressLibrary,
 );
